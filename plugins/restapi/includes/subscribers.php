@@ -159,5 +159,79 @@ class Subscribers {
         }
 
     }
+	
+		/**
+     * <p>Subscribers assigned to a list.</p>
+     * <p><strong>Parameters:</strong><br/>
+     * [*user_id] {integer} the list-ID.
+     * <p><strong>Returns:</strong><br/>
+     * Array of subscribers assigned to a list.
+     * </p>
+	 * @author: Jose <jose@alsur.es>
+     */
+    static function subscribersList ( $list_id=0 ) {
+        $response = new Response();
+        if ( $list_id==0 ) {
+			if (isset($_REQUEST['list_id'])) $list_id = $_REQUEST['list_id'];
+			else die('Sin lista no hay subscriptores');
+		}
+        $sql = "SELECT * FROM " . $GLOBALS['usertable_prefix'] . "user WHERE id IN (SELECT userid FROM " . $GLOBALS['table_prefix'] . "listuser WHERE listid=" . $list_id . ") ORDER BY id;";
+        try {
+            $db = PDO::getConnection();
+            $stmt = $db->query($sql);
+            $result = $stmt->fetchAll(PDO::FETCH_OBJ);
+            $db = null;
+            $response->setData('Subscribers', $result);
+            $response->output();
+        } catch(\PDOException $e) {
+            Response::outputError($e);
+        }
+        die(0);
+    }
+	
+	/**
+     * <p>modifico atributo a traves de la API.
+	 * {"9": "Pepito", "11": "Perez"}
+	 * No implementado en un primer momento.
+     * </p>
+	 * @author: Jose <jose@alsur.es>
+     */
+    static function subscriberUpdateAttribute ($_data = array()) {
+		
+		# no esta depurada llamando a esta funcion directamente por $_REQUEST.
+		# if(!isset($_data)) $_data = $_REQUEST; 
+		
+        $sql = "REPLACE INTO " . $GLOBALS['usertable_prefix'] . "user_attribute SET attributeid=:attributeid, userid=:userid, value=:value";
+        try {
+            $db = PDO::getConnection();
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam("attributeid", ($_data['attributeid']));
+            $stmt->bindParam("userid", $_data['userid'] );
+            $stmt->bindParam("value", $_data['value'] );
+            $stmt->execute();
+            $db = null;
+        } catch(\PDOException $e) {
+            Response::outputError($e);
+        }
+    }
+	
+	/**
+     * <p>modifico json de atributos a traves de la API.
+	 * {"9": "Pepito", "11": "Perez"}
+	 * No implementado en un primer momento.
+     * </p>
+	 * @author: Jose <jose@alsur.es>
+     */
+    static function subscriberUpdateAttributes () {
+		
+		$userid = $_REQUEST['userid'];
+		
+		$metadata = json_decode(stripslashes($_REQUEST['metadata']), true);
+		foreach($metadata as $kd=>$vd){
+			self::subscriberUpdateAttribute(array('userid' => $userid, 'attributeid' => $kd, 'value' => $vd));
+		}
+        Subscribers::SubscriberGet( $userid);
+        die(0);
+    }
 
 }
