@@ -91,7 +91,7 @@ class Subscribers {
             $id = $db->lastInsertId();
             $db = null;
             Subscribers::SubscriberGet( $id );
-        } catch(PDOException $e) {
+        } catch(\PDOException $e) {
             Response::outputError($e);
         }
 
@@ -129,7 +129,7 @@ class Subscribers {
             $stmt->execute();
             $db = null;
             Subscribers::SubscriberGet( $_REQUEST['id'] );
-        } catch(PDOException $e) {
+        } catch(\PDOException $e) {
             Response::outputError($e);
         }
 
@@ -154,13 +154,13 @@ class Subscribers {
             $stmt->execute();
             $db = null;
             Response::outputDeleted( 'Subscriber', $_REQUEST['id'] );
-        } catch(PDOException $e) {
+        } catch(\PDOException $e) {
             Response::outputError($e);
         }
 
     }
 	
-		/**
+	/**
      * <p>Subscribers assigned to a list.</p>
      * <p><strong>Parameters:</strong><br/>
      * [*user_id] {integer} the list-ID.
@@ -223,15 +223,17 @@ class Subscribers {
 	 * @author: Jose <jose@alsur.es>
      */
     static function subscriberUpdateAttributes () {
-		
 		$userid = $_REQUEST['userid'];
 		
 		$metadata = json_decode(stripslashes($_REQUEST['metadata']), true);
 		foreach($metadata as $kd=>$vd){
-			self::subscriberUpdateAttribute(array('userid' => $userid, 'attributeid' => $kd, 'value' => $vd));
+			
+			self::subscriberUpdateAttribute(array('userid' => $userid, 'attributeid' => $kd, 'value' => utf8_decode($vd)));
 		}
         Subscribers::SubscriberGet( $userid);
         die(0);
     }
+	
+	
 
 }
