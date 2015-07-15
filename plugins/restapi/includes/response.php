@@ -56,6 +56,9 @@ class Response{
 
         // loop over elements/properties
         foreach ($var as $key => $value) {
+			
+			// time limit a 0, ya que si no no llega a completar en datos largos.
+			set_time_limit(0);
             // recursively convert objects
             if (is_object($value) || is_array($value)) {
                 // but prevent cycles
