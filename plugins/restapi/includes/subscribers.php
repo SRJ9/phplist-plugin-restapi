@@ -233,6 +233,26 @@ class Subscribers {
         Subscribers::SubscriberGet( $userid);
         die(0);
     }
+
+    static function isEmailInBlackList(){
+        $response = new Response();
+        $email = $_REQUEST['email'];
+
+        $sql = "SELECT * FROM " . $GLOBALS['usertable_prefix'] . "blacklist WHERE email = '" . $email . "';";
+        try {
+            $db = PDO::getConnection();
+            $stmt = $db->query($sql);
+            $result = $stmt->fetchAll(PDO::FETCH_OBJ);
+            $db = null;
+            $response->setData('Blacklisted', $result);
+            $response->output();
+        } catch(\PDOException $e) {
+            Response::outputError($e);
+        }
+        die(0);
+
+
+    }
 	
 	
 
