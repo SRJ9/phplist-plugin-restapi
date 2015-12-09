@@ -234,7 +234,10 @@ class Subscribers {
         die(0);
     }
 
-    static function isEmailInBlackList(){
+    static function blacklistedEmailInfo(){
+        if ( !isset($_REQUEST['email']) ) {
+            die('Parametro email no presente');
+        }
         $response = new Response();
         $email = $_REQUEST['email'];
 
