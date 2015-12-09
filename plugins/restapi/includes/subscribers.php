@@ -238,21 +238,14 @@ class Subscribers {
         if ( !isset($_REQUEST['email']) ) {
             die('Parametro email no presente');
         }
-        $response = new Response();
+        // $response = new Response();
         $email = $_REQUEST['email'];
 
-        $sql = "SELECT * FROM " . $GLOBALS['usertable_prefix'] . "blacklist WHERE email = '" . $email . "';";
-        try {
-            $db = PDO::getConnection();
-            $stmt = $db->query($sql);
-            $result = $stmt->fetchAll(PDO::FETCH_OBJ);
-            $db = null;
-            $response->setData('Blacklisted', $result);
-            $response->output();
-        } catch(\PDOException $e) {
-            Response::outputError($e);
-        }
-        die(0);
+        Common::select( 'Blacklisted',
+            "SELECT added, `data` as reason FROM "
+            . $GLOBALS['usertable_prefix'] . "blacklist INNER JOIN ".$GLOBALS['usertable_prefix'] ."blacklist_data"
+            . " ON ".$GLOBALS['usertable_prefix'] . "blacklist.email=".$GLOBALS['usertable_prefix'] ."blacklist_data.email"
+            ." WHERE ".$GLOBALS['usertable_prefix']."blacklist.email = '".$email."'", true );
 
 
     }
