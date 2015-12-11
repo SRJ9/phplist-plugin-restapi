@@ -106,6 +106,22 @@ class Lists {
         die(0);
     }
 
+    static function listUpdateDescription(){
+        $sql = "UPDATE " . $GLOBALS['table_prefix'] . "list SET description=:description WHERE id=:id;";
+        try {
+            $db = PDO::getConnection();
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam("id", $_REQUEST['id']);
+            $stmt->bindParam("description", $_REQUEST['description'] );
+            $stmt->execute();
+            $db = null;
+            Lists::listGet( $_REQUEST['id'] );
+        } catch(PDOException $e) {
+            Response::outputError($e);
+        }
+        die(0);
+    }
+
     /**
      * <p>Deletes a list.</p>
      * <p><strong>Parameters:</strong><br/>
