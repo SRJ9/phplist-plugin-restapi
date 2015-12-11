@@ -122,6 +122,22 @@ class Lists {
         die(0);
     }
 
+    static function listUpdateActive(){
+        $sql = "UPDATE " . $GLOBALS['table_prefix'] . "list SET active=:active WHERE id=:id;";
+        try {
+            $db = PDO::getConnection();
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam("id", $_REQUEST['id']);
+            $stmt->bindParam("active", $_REQUEST['active'] );
+            $stmt->execute();
+            $db = null;
+            Lists::listGet( $_REQUEST['id'] );
+        } catch(PDOException $e) {
+            Response::outputError($e);
+        }
+        die(0);
+    }
+
     /**
      * <p>Deletes a list.</p>
      * <p><strong>Parameters:</strong><br/>
