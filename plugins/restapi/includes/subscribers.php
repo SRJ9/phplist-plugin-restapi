@@ -279,6 +279,60 @@ class Subscribers {
 
     }
 
+    static function subscriberMessages(){
+        if ( !isset($_REQUEST['email']) && !isset($_REQUEST['userid']) ) {
+            die('Parametro email/userid no presente');
+        }
+        if(isset($_REQUEST['userid'])){
+            $userid = trim($_REQUEST['userid']);
+            if(strlen($userid)==0 || strlen($userid)>10){
+
+                Response::outputErrorMessage( 'Longitud de Parametro no apropiada' );
+
+            }
+        } elseif(isset($_REQUEST['email'])){
+
+            $email = trim($_REQUEST['email']);
+            if(strlen($email)==0 || strlen($email)>100){
+                Response::outputErrorMessage( 'Longitud de Parametro no apropiada' );
+
+            }
+            $email = trim($_REQUEST['email']);
+
+        }
+
+        $sql = "SELECT
+messageid,
+`subject`,
+userid,
+`phplist_usermessage`.entered as entered,
+`phplist_usermessage`.viewed as viewed,
+`phplist_usermessage`.`status` as `status`,
+email
+FROM (`phplist_message`
+INNER JOIN `phplist_usermessage` ON `phplist_message`.id=`phplist_usermessage`.messageid)
+INNER JOIN `phplist_user_user` ON `phplist_usermessage`.userid = `phplist_user_user`.id";
+        if($userid) {
+            $sql .= " WHERE userid = '{$userid}'";
+        } elseif($email) {
+            $sql .= " WHERE email = '{$email}'";
+        }
+
+
+        try {
+            $response = new Response();
+            $db = PDO::getConnection();
+            $stmt = $db->query($sql);
+            $result = $stmt->fetchAll(PDO::FETCH_OBJ);
+            $response->setData('blacklist', $result);
+            $db = null;
+            $response->output();
+        } catch(\PDOException $e) {
+            Response::outputError($e);
+        }
+        die(0);
+    }
+
 
 
 }
