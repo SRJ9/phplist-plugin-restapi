@@ -324,7 +324,7 @@ INNER JOIN `phplist_user_user` ON `phplist_usermessage`.userid = `phplist_user_u
             $db = PDO::getConnection();
             $stmt = $db->query($sql);
             $result = $stmt->fetchAll(PDO::FETCH_OBJ);
-            $response->setData('blacklist', $result);
+            $response->setData('messages', $result);
             $db = null;
             $response->output();
         } catch(\PDOException $e) {
