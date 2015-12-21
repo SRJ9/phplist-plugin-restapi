@@ -311,7 +311,9 @@ userid,
 email
 FROM (`phplist_message`
 INNER JOIN `phplist_usermessage` ON `phplist_message`.id=`phplist_usermessage`.messageid)
-INNER JOIN `phplist_user_user` ON `phplist_usermessage`.userid = `phplist_user_user`.id";
+INNER JOIN `phplist_user_user` ON `phplist_usermessage`.userid = `phplist_user_user`.id
+  ORDER_BY messageid DESC
+";
         if($userid) {
             $sql .= " WHERE userid = '{$userid}'";
         } elseif($email) {
