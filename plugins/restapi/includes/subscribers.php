@@ -320,7 +320,7 @@ INNER JOIN `phplist_user_user` ON `phplist_usermessage`.userid = `phplist_user_u
             $sql .= " WHERE email = '{$email}'";
         }
 
-        $sql .= " ORDER BY messageid DESC";
+        $sql .= " ORDER BY entered DESC";
 
 
         try {
