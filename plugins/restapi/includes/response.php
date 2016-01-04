@@ -53,7 +53,7 @@ class Response{
     function object_to_array($var) {
         $result = array();
         $references = array();
-
+		
         // loop over elements/properties
         foreach ($var as $key => $value) {
 			
@@ -70,6 +70,7 @@ class Response{
                 // simple values are untouched
                 $result[$key] = utf8_encode($value);
             }
+			
         }
         return $result;
     }
