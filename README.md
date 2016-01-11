@@ -7,11 +7,12 @@ Two plugins inside this repo: "restapi" and "restapi-test"
 
 Original development by Flowcom AB, Andreas Ek ([@EkAndreas](https://twitter.com/ekandreas))
 
-License: GPLv2
+License: GPLv3 or later
 
 ##History
 ```
 v.      Date        Description
+        2015-10-21  Added Travis integration
 0.3     2014-05-31  Moved to phpList organisation and renamed phplist-plugin-restapi
 0.2.7   2013-03-13  Added order and limit to listsGet
 0.2.6   2013-03-13  Test script fixed with login and password.
@@ -47,9 +48,6 @@ Log in to /admin and the collapsed "Plugins" menu should have two links added: "
 
 Click on the item "RESTAPI" item for more information!
 
-###4. Test
-Click on "restapi test" to test your installation of the API plugin!
-
 ##Access
 Autentication required as admin in phpList.
 
@@ -64,11 +62,10 @@ First login to phpList with *POST* method and body parameters: "login" and "pass
 
 
 ##Client
-To try the RESTAPI, please use a client like CocaRestClient or eqvivalent!
 
-There is an example class in restapi-test/phplist_restapi_helper.php if you like to try it in PHP.
+Some examples and a client class to access the API can be found at
 
-For examples check commands in restapi-test/main.php
+https://github.com/michield/phplist-restapi-client
 
 ##Standard reponse
 All responses is returned in json and encoded to UTF-8.
