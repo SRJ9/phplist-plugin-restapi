@@ -305,6 +305,12 @@ class Subscribers
         }
     }
      /**
+     * <p>Subscribers assigned to a list.</p>
+     * <p><strong>Parameters:</strong><br/>
+     * [*user_id] {integer} the list-ID.
+     * <p><strong>Returns:</strong><br/>
+     * Array of subscribers assigned to a list.
+     * </p>
      * @author: Jose <jose@alsur.es>
      */
     public static function subscribersList ( $list_id=0 ) {

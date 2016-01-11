@@ -5,190 +5,195 @@ defined('PHPLISTINIT') || die;
 
 /**
  * Class phpList_RESTAPI_Lists
- * Getting lists, adding and removing its users and messages
+ * Getting lists, adding and removing its subscribers and campaigns.
  */
-class Lists {
-
+class Lists
+{
     /**
-     * <p>Gets all lists in phpList as an array.</p>
+     * Gets all lists in phpList as an array.
+     *
      * <p><strong>Parameters:</strong><br/>
      * (none)
      * <p><strong>Returns:</strong><br/>
-     * Array of lists.
+     * Array of lists. Limited to 50.
      * </p>
      */
-    static function listsGet() {
-        Common::select( 'Lists', "SELECT * FROM " . $GLOBALS['table_prefix'] . "list ORDER BY listorder;" );
+    public static function listsGet()
+    {
+        Common::select('Lists', 'SELECT * FROM '.$GLOBALS['tables']['list'].' ORDER BY listorder limit 50;',array());
     }
 
     /**
-     * <p>Gets one (1) list.</p>
+     * Gets one (1) list.
+     *
      * <p><strong>Parameters:</strong><br/>
      * [*id] {integer} the ID of the list.
      * <p><strong>Returns:</strong><br/>
      * One list.
      * </p>
      */
-    static function listGet( $id=0 ) {
-        if ( $id==0 ) $id = $_REQUEST['id'];
-        Common::select( 'List', "SELECT * FROM " . $GLOBALS['table_prefix'] . "list WHERE id = $id;", true );
+    public static function listGet($id = 0)
+    {
+        if ($id == 0) {
+            $id = $_REQUEST['id'];
+        }
+
+        $params = array(
+            'id'=> array($id,PDO::PARAM_INT),
+            );
+
+
+        Common::select('List', 'SELECT * FROM '.$GLOBALS['tables']['list']." WHERE id = :id;",$params,true);
     }
 
     /**
-     * <p>Adds a new list.</p>
+     * Add a new list.
+     *
      * <p><strong>Parameters:</strong><br/>
      * [*name] {string} the name of the list.<br/>
      * [description] {string} adds a description to the list.<br/>
      * [listorder] {integer} an expression to sortorder, eg 100.<br/>
-     * [prefix] {string} adds a prefix to the list (?).<br/>
-     * [rssfeed] {string} the url to the feed for this list (?).<br/>
      * [active] {integer} if list should be active set this one to 1, otherwise it will be disabled.<br/>
      * <p><strong>Returns:</strong><br/>
      * The list added.
      * </p>
      */
-    static function listAdd(){
+    public static function listAdd()
+    {
+        $sql = 'INSERT INTO '.$GLOBALS['tables']['list'].'
+          (name, description, listorder, category, active)
+          VALUES (:name, :description, :listorder, :category, :active);';
 
-        $sql = "INSERT INTO " . $GLOBALS['table_prefix'] . "list (name, description, listorder, prefix, rssfeed, active) VALUES (:name, :description, :listorder, :prefix, :rssfeed, :active);";
+        // allow for an empty category, which didn't exist before
+        if (!isset($_REQUEST['category'])) {
+            $_REQUEST['category'] = '';
+        }
         try {
             $db = PDO::getConnection();
             $stmt = $db->prepare($sql);
-            $stmt->bindParam("name", $_REQUEST['name']);
-            $stmt->bindParam("description", $_REQUEST['description']);
-            $stmt->bindParam("listorder", $_REQUEST['listorder']);
-            $stmt->bindParam("prefix", $_REQUEST['prefix']);
-            $stmt->bindParam("rssfeed", $_REQUEST['rssfeed']);
-            $stmt->bindParam("active", $_REQUEST['active']);
+            $stmt->bindParam('name', $_REQUEST['name'],PDO::PARAM_STR);
+            $stmt->bindParam('description', $_REQUEST['description'],PDO::PARAM_STR);
+            $stmt->bindParam('listorder', $_REQUEST['listorder'],PDO::PARAM_INT);
+            $stmt->bindParam('category', $_REQUEST['category'],PDO::PARAM_STR);
+            $stmt->bindParam('active', $_REQUEST['active'],PDO::PARAM_BOOL);
             $stmt->execute();
             $id = $db->lastInsertId();
             $db = null;
-            Lists::listGet( $id );
-        } catch(\PDOException $e) {
+            self::listGet($id);
+        } catch (\Exception $e) {
             Response::outputError($e);
         }
         die(0);
     }
 
     /**
-     * <p>Updates existing list.</p>
+     * Update existing List.
+     *
      * <p><strong>Parameters:</strong><br/>
      * [*id] {integer} the ID of the list.<br/>
      * [*name] {string} the name of the list.<br/>
      * [description] {string} adds a description to the list.<br/>
      * [listorder] {integer} an expression to sortorder, eg 100.<br/>
-     * [prefix] {string} adds a prefix to the list (?).<br/>
-     * [rssfeed] {string} the url to the feed for this list (?).<br/>
      * [active] {integer} if list should be active set this one to 1, otherwise it will be disabled.<br/>
      * <p><strong>Returns:</strong><br/>
      * The list updated.
      * </p>
      */
-    static function listUpdate(){
+    public static function listUpdate()
+    {
+        $sql = 'UPDATE '.$GLOBALS['tables']['list'].'
+          SET name=:name, description=:description, listorder=:listorder, category=:category, active=:active
+          WHERE id=:id;';
 
-        $sql = "UPDATE " . $GLOBALS['table_prefix'] . "list SET name=:name, description=:description, listorder=:listorder, prefix=:prefix, rssfeed=:rssfeed, active=:active WHERE id=:id;";
-
-        try {
-            $db = PDO::getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam("id", $_REQUEST['id']);
-            $stmt->bindParam("name", $_REQUEST['name'] );
-            $stmt->bindParam("description", $_REQUEST['description'] );
-            $stmt->bindParam("listorder", $_REQUEST['listorder'] );
-            $stmt->bindParam("prefix", $_REQUEST['prefix'] );
-            $stmt->bindParam("rssfeed", $_REQUEST['rssfeed'] );
-            $stmt->bindParam("active", $_REQUEST['active'] );
-            $stmt->execute();
-            $db = null;
-            Lists::listGet( $_REQUEST['id'] );
-        } catch(\PDOException $e) {
-            Response::outputError($e);
+        // allow for an empty category, which didn't exist before
+        if (!isset($_REQUEST['category'])) {
+            $_REQUEST['category'] = '';
         }
-        die(0);
-    }
 
-    static function listUpdateDescription(){
-        $sql = "UPDATE " . $GLOBALS['table_prefix'] . "list SET description=:description WHERE id=:id;";
         try {
             $db = PDO::getConnection();
             $stmt = $db->prepare($sql);
-            $stmt->bindParam("id", $_REQUEST['id']);
-            $stmt->bindParam("description", $_REQUEST['description'] );
+            $stmt->bindParam('id', $_REQUEST['id'],PDO::PARAM_INT);
+            $stmt->bindParam('name', $_REQUEST['name'],PDO::PARAM_STR);
+            $stmt->bindParam('description', $_REQUEST['description'],PDO::PARAM_STR);
+            $stmt->bindParam('listorder', $_REQUEST['listorder'],PDO::PARAM_INT);
+            $stmt->bindParam('category', $_REQUEST['category'],PDO::PARAM_STR);
+            $stmt->bindParam('active', $_REQUEST['active'],PDO::PARAM_BOOL);
             $stmt->execute();
             $db = null;
-            Lists::listGet( $_REQUEST['id'] );
-        } catch(\PDOException $e) {
-            Response::outputError($e);
-        }
-        die(0);
-    }
-
-    static function listUpdateActive(){
-        $sql = "UPDATE " . $GLOBALS['table_prefix'] . "list SET active=:active WHERE id=:id;";
-        try {
-            $db = PDO::getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam("id", $_REQUEST['id']);
-            $stmt->bindParam("active", $_REQUEST['active'] );
-            $stmt->execute();
-            $db = null;
-            Lists::listGet( $_REQUEST['id'] );
-        } catch(\PDOException $e) {
+            self::listGet($_REQUEST['id']);
+        } catch (\Exception $e) {
             Response::outputError($e);
         }
         die(0);
     }
 
     /**
-     * <p>Deletes a list.</p>
+     * Delete a List.
+     *
      * <p><strong>Parameters:</strong><br/>
      * [*id] {integer} the ID of the list.
      * <p><strong>Returns:</strong><br/>
      * System message of action.
      * </p>
      */
-    static function listDelete(){
-
-        $sql = "DELETE FROM " . $GLOBALS['table_prefix'] . "list WHERE id=:id;";
+    public static function listDelete()
+    {
+        $sql = 'DELETE FROM '.$GLOBALS['tables']['list'].' WHERE id=:id;';
         try {
+            if (!is_numeric($_REQUEST['id']) || empty($_REQUEST['id'])) {
+                Response::outputErrorMessage('invalid call');
+            }
             $db = PDO::getConnection();
             $stmt = $db->prepare($sql);
-            $stmt->bindParam("id", $_REQUEST['id']);
+            $stmt->bindParam('id', $_REQUEST['id'],PDO::PARAM_INT);
             $stmt->execute();
             $db = null;
-            Response::outputDeleted( 'List', $_REQUEST['id'] );
-        } catch(\PDOException $e) {
+            Response::outputDeleted('List', sprintf('%d',$_REQUEST['id']));
+        } catch (\Exception $e) {
             Response::outputError($e);
         }
         die(0);
     }
 
     /**
-     * <p>Lists assigned to Subscriber.</p>
+     * Get Lists a Subscriber is Member of.
+     *
      * <p><strong>Parameters:</strong><br/>
-     * [*user_id] {integer} the Subscriber-ID.
+     * [*subscriber_id] {integer} the Subscriber-ID.
      * <p><strong>Returns:</strong><br/>
      * Array of lists where the subscriber is assigned to.
      * </p>
      */
-    static function listsSubscriber ( $subscriber_id=0 ) {
+    public static function listsSubscriber($subscriber_id = 0)
+    {
         $response = new Response();
-        if ( $subscriber_id==0 ) $subscriber_id = $_REQUEST['subscriber_id'];
-        $sql = "SELECT * FROM " . $GLOBALS['table_prefix'] . "list WHERE id IN (SELECT listid FROM " . $GLOBALS['table_prefix'] . "listuser WHERE userid=" . $subscriber_id . ") ORDER BY listorder;";
+        if ($subscriber_id == 0) {
+            $subscriber_id = sprintf('%d',$_REQUEST['subscriber_id']);
+        }
+        $sql = 'SELECT * FROM '.$GLOBALS['tables']['list'].' WHERE id IN
+          (SELECT listid FROM '.$GLOBALS['tables']['listuser'].' WHERE userid=:subscriber_id) ORDER BY listorder;';
+        if (!is_numeric($subscriber_id) || empty($subscriber_id)) {
+            Response::outputErrorMessage('invalid call');
+        }
         try {
             $db = PDO::getConnection();
-            $stmt = $db->query($sql);
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam('subscriber_id', $subscriber_id, PDO::PARAM_INT);
+            $stmt->execute();
             $result = $stmt->fetchAll(PDO::FETCH_OBJ);
             $db = null;
             $response->setData('Lists', $result);
             $response->output();
-        } catch(\PDOException $e) {
+        } catch (\Exception $e) {
             Response::outputError($e);
         }
         die(0);
     }
 
     /**
-     * <p>Adds a subscriber to a list.</p>
+     * Add a subscriber to a list.
+     *
      * <p>The subscriber then subscribes to the list.</p>
      * <p><strong>Parameters:</strong><br/>
      * [*list_id] {integer} the ID of the list.<br/>
@@ -197,22 +202,29 @@ class Lists {
      * Array of lists where the subscriber is assigned to.
      * </p>
      */
-    static function listSubscriberAdd( $list_id=0, $subscriber_id=0 ){
-        if ( $list_id==0 ) $list_id = $_REQUEST['list_id'];
-        if ( $subscriber_id==0 ) $subscriber_id = $_REQUEST['subscriber_id'];
-        $sql = "INSERT INTO " . $GLOBALS['table_prefix'] . "listuser (userid, listid, entered) VALUES (:subscriber_id, :list_id, now());";
-		
+    public static function listSubscriberAdd($list_id = 0, $subscriber_id = 0)
+    {
+        if ($list_id == 0) {
+            $list_id = sprintf('%d',$_REQUEST['list_id']);
+        }
+        if ($subscriber_id == 0) {
+            $subscriber_id = sprintf('%d',$_REQUEST['subscriber_id']);
+        }
+         if (empty($subscriber_id) || empty($list_id)) {
+            Response::outputErrorMessage('invalid call');
+        }
+        $sql = 'INSERT INTO '.$GLOBALS['tables']['listuser'].' (userid, listid, entered) VALUES (:subscriber_id, :list_id, now());';
         try {
             $db = PDO::getConnection();
             $stmt = $db->prepare($sql);
-            $stmt->bindParam("subscriber_id", $subscriber_id );
-            $stmt->bindParam("list_id", $list_id );
+            $stmt->bindParam('subscriber_id', $subscriber_id,PDO::PARAM_INT);
+            $stmt->bindParam('list_id', $list_id,PDO::PARAM_INT);
             $stmt->execute();
             $db = null;
-            Lists::listsSubscriber( $subscriber_id );
-        } catch(\PDOException $e) {
+            self::listsSubscriber( $subscriber_id );
+        } catch(\Exception $e) {
             if ($e->errorInfo[1] == 1062) {
-            Lists::listsSubscriber( $subscriber_id );
+            self::listsSubscriber( $subscriber_id );
 		   } else {
 			  Response::outputError($e);
 		   }
@@ -229,74 +241,91 @@ class Lists {
      * System message of action.
      * </p>
      */
-    static function listSubscriberDelete( $list_id=0, $subscriber_id=0 ){
-        if ( $list_id==0 ) $list_id = $_REQUEST['list_id'];
-        if ( $subscriber_id==0 ) $subscriber_id = $_REQUEST['subscriber_id'];
-        $sql = "DELETE FROM " . $GLOBALS['table_prefix'] . "listuser WHERE listid=:list_id AND userid=:subscriber_id;";
+    public static function listSubscriberDelete($list_id = 0, $subscriber_id = 0)
+    {
+        if ($list_id == 0) {
+            $list_id = $_REQUEST['list_id'];
+        }
+        if ($subscriber_id == 0) {
+            $subscriber_id = $_REQUEST['subscriber_id'];
+        }
+        $sql = 'DELETE FROM '.$GLOBALS['tables']['listuser'].' WHERE listid=:list_id AND userid=:subscriber_id;';
         try {
             $db = PDO::getConnection();
             $stmt = $db->prepare($sql);
-            $stmt->bindParam("subscriber_id", $subscriber_id );
-            $stmt->bindParam("list_id", $list_id );
+            $stmt->bindParam('subscriber_id', $subscriber_id,PDO::PARAM_INT);
+            $stmt->bindParam('list_id', $list_id,PDO::PARAM_INT);
             $stmt->execute();
             $db = null;
             Response::outputMessage( 'Subscriber ' . $subscriber_id . ' is unassigned from list ' . $list_id );
-        } catch(\PDOException $e) {
+        } catch(\Exception $e) {
             Response::outputError($e);
         }
         die(0);
     }
 
     /**
-     * <p>Assigns a list to a message.</p>
+     * Assigns a list to a campaign.
+     *
      * <p><strong>Parameters:</strong><br/>
      * [*list_id] {integer} the ID of the list.<br/>
-     * [*message_id] {integer} the ID of the message.
+     * [*campaign_id] {integer} the ID of the campaign.
      * <p><strong>Returns:</strong><br/>
      * The list assigned.
      * </p>
      */
-    static function listMessageAdd( $list_id=0, $message_id=0 ){
-        if ( $list_id==0 ) $list_id = $_REQUEST['list_id'];
-        if ( $message_id==0 ) $message_id = $_REQUEST['message_id'];
-        $sql = "INSERT INTO " . $GLOBALS['table_prefix'] . "listmessage (messageid, listid, entered) VALUES (:message_id, :list_id, now());";
+    public static function listCampaignAdd($list_id = 0, $campaign_id = 0)
+    {
+        if ($list_id == 0) {
+            $list_id = $_REQUEST['list_id'];
+        }
+        if ($campaign_id == 0) {
+            $campaign_id = $_REQUEST['campaign_id'];
+        }
+        $sql = 'INSERT INTO '.$GLOBALS['tables']['listmessage'].' (messageid, listid, entered) VALUES (:campaign_id, :list_id, now());';
         try {
             $db = PDO::getConnection();
             $stmt = $db->prepare($sql);
-            $stmt->bindParam("message_id", $message_id );
-            $stmt->bindParam("list_id", $list_id );
+            $stmt->bindParam('campaign_id', $campaign_id,PDO::PARAM_INT);
+            $stmt->bindParam('list_id', $list_id,PDO::PARAM_INT);
             $stmt->execute();
             $db = null;
-            Lists::listGet( $list_id );
-        } catch(\PDOException $e) {
+            self::listGet($list_id);
+        } catch (\Exception $e) {
             Response::outputError($e);
         }
         die(0);
     }
 
     /**
-     * <p>Unassigns a list from a message.</p>
+     * Unassigns a list from a campaign.
+     *
      * <p><strong>Parameters:</strong><br/>
      * [*list_id] {integer} the ID of the list.<br/>
-     * [*message_id] {integer} the ID of the message.
+     * [*campaign_id] {integer} the ID of the campaign.
      * </p>
      * <p><strong>Returns:</strong><br/>
      * System message of action.
      * </p>
      */
-    static function listMessageDelete( $list_id=0, $message_id=0 ){
-        if ( $list_id==0 ) $list_id = $_REQUEST['list_id'];
-        if ( $message_id==0 ) $message_id = $_REQUEST['message_id'];
-        $sql = "DELETE FROM " . $GLOBALS['table_prefix'] . "listmessage WHERE listid=:list_id AND messageid=:message_id;";
+    public static function listCampaignDelete($list_id = 0, $campaign_id = 0)
+    {
+        if ($list_id == 0) {
+            $list_id = $_REQUEST['list_id'];
+        }
+        if ($campaign_id == 0) {
+            $campaign_id = $_REQUEST['campaign_id'];
+        }
+        $sql = 'DELETE FROM '.$GLOBALS['tables']['listmessage'].' WHERE listid=:list_id AND messageid=:campaign_id;';
         try {
             $db = PDO::getConnection();
             $stmt = $db->prepare($sql);
-            $stmt->bindParam("message_id", $message_id );
-            $stmt->bindParam("list_id", $list_id );
+            $stmt->bindParam('campaign_id', $campaign_id,PDO::PARAM_INT);
+            $stmt->bindParam('list_id', $list_id,PDO::PARAM_INT);
             $stmt->execute();
             $db = null;
-            Response::outputMessage( 'Message ' . $message_id . ' is unassigned from list ' . $list_id );
-        } catch(\PDOException $e) {
+            Response::outputMessage('Campaign '.$campaign_id.' wsa removed from list '.$list_id);
+        } catch (\Exception $e) {
             Response::outputError($e);
         }
         die(0);
