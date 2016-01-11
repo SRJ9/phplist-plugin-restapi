@@ -482,4 +482,57 @@ INNER JOIN `phplist_user_user` ON `phplist_usermessage`.userid = `phplist_user_u
         die(0);
     }
 
+    public static function removeBlacklistEmail(){
+        if ( !isset($_REQUEST['email']) ) {
+            Response::outputErrorMessage( 'Parametro email no presente' );
+        }
+
+        $message_OK = '';
+        $email = trim($_REQUEST['email']);
+
+        $sql = "UPDATE ". $GLOBALS['usertable_prefix'] . "user SET blacklisted = '0' WHERE email = :email'";
+        try {
+            $db = PDO::getConnection();
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam("email", $email);
+            $stmt->execute();
+            $db = null;
+            $message_OK .= 'Usuario deja de estar en blacklist\n';
+        } catch(\Exception $e) {
+            Response::outputError($e);
+        }
+
+        $sql = "DELETE ". $GLOBALS['usertable_prefix'] . "blacklist WHERE email = :email'";
+        try {
+            $db = PDO::getConnection();
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam("email", $email);
+            $stmt->execute();
+            $db = null;
+            $message_OK .= 'Email deja de estar en blacklist\n';
+        } catch(\Exception $e) {
+            Response::outputError($e);
+        }
+
+        $sql = "DELETE ". $GLOBALS['usertable_prefix'] . "blacklist_data WHERE email = :email'";
+        try {
+            $db = PDO::getConnection();
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam("email", $email);
+            $stmt->execute();
+
+            $db = null;
+            $message_OK .= 'Razon email deja de estar en blacklist\n';
+        } catch(\Exception $e) {
+            Response::outputError($e);
+        }
+
+        if($message_OK != ''){
+            $response = new Response();
+            $response->setData('remove_blacklist', $message_OK);
+        }
+
+
+    }
+
 }
