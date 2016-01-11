@@ -489,6 +489,7 @@ INNER JOIN `phplist_user_user` ON `phplist_usermessage`.userid = `phplist_user_u
 
         $message_OK = '';
         $email = trim($_REQUEST['email']);
+        $response = new Response();
 
         $sql = "UPDATE ". $GLOBALS['usertable_prefix'] . "user SET blacklisted = '0' WHERE email = :email";
         try {
@@ -528,8 +529,8 @@ INNER JOIN `phplist_user_user` ON `phplist_usermessage`.userid = `phplist_user_u
         }
 
         if($message_OK != ''){
-            $response = new Response();
             $response->setData('remove_blacklist', $message_OK);
+            $response->output();
         }
 
 
