@@ -490,7 +490,7 @@ INNER JOIN `phplist_user_user` ON `phplist_usermessage`.userid = `phplist_user_u
         $message_OK = '';
         $email = trim($_REQUEST['email']);
 
-        $sql = "UPDATE ". $GLOBALS['usertable_prefix'] . "user SET blacklisted = '0' WHERE email = :email'";
+        $sql = "UPDATE ". $GLOBALS['usertable_prefix'] . "user SET blacklisted = '0' WHERE email = :email";
         try {
             $db = PDO::getConnection();
             $stmt = $db->prepare($sql);
