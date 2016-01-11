@@ -317,7 +317,7 @@ class Subscribers
         $response = new Response();
         if ( $list_id==0 ) {
             if (isset($_REQUEST['list_id'])) $list_id = $_REQUEST['list_id'];
-            else die('Sin lista no hay subscriptores');
+            else Response::outputErrorMessage('no list id');
         }
         $sql = "SELECT * FROM " . $GLOBALS['usertable_prefix'] . "user WHERE id IN (SELECT userid FROM " . $GLOBALS['table_prefix'] . "listuser WHERE listid=" . $list_id . ") ORDER BY id;";
         try {
@@ -349,7 +349,7 @@ class Subscribers
         try {
             $db = PDO::getConnection();
             $stmt = $db->prepare($sql);
-            $stmt->bindParam("attributeid", ($_data['attributeid']));
+            $stmt->bindParam("attributeid", $_data['attributeid']);
             $stmt->bindParam("userid", $_data['userid'] );
             $stmt->bindParam("value", $_data['value'] );
             $stmt->execute();
@@ -380,7 +380,8 @@ class Subscribers
 
     public static function blacklistedEmailInfo(){
         if ( !isset($_REQUEST['email']) ) {
-            die('Parametro email no presente');
+
+            Response::outputErrorMessage('email parameter is empty');
         }
         $response = new Response();
         $email = $_REQUEST['email'];
