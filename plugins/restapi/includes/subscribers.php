@@ -426,7 +426,7 @@ class Subscribers
 
     public static function subscriberMessages(){
         if ( !isset($_REQUEST['email']) && !isset($_REQUEST['userid']) ) {
-            die('Parametro email/userid no presente');
+            Response::outputErrorMessage( 'Parametro email/userid no presente' );
         }
         if(isset($_REQUEST['userid'])){
             $userid = trim($_REQUEST['userid']);
