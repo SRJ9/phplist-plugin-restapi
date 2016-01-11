@@ -502,7 +502,7 @@ INNER JOIN `phplist_user_user` ON `phplist_usermessage`.userid = `phplist_user_u
             Response::outputError($e);
         }
 
-        $sql = "DELETE ". $GLOBALS['usertable_prefix'] . "blacklist WHERE email = :email";
+        $sql = "DELETE FROM ". $GLOBALS['usertable_prefix'] . "blacklist WHERE email = :email";
         try {
             $db = PDO::getConnection();
             $stmt = $db->prepare($sql);
@@ -514,7 +514,7 @@ INNER JOIN `phplist_user_user` ON `phplist_usermessage`.userid = `phplist_user_u
             Response::outputError($e);
         }
 
-        $sql = "DELETE ". $GLOBALS['usertable_prefix'] . "blacklist_data WHERE email = :email";
+        $sql = "DELETE FROM ". $GLOBALS['usertable_prefix'] . "blacklist_data WHERE email = :email";
         try {
             $db = PDO::getConnection();
             $stmt = $db->prepare($sql);
