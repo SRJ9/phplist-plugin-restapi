@@ -128,6 +128,38 @@ class Lists
         die(0);
     }
 
+    static function listUpdateDescription(){
+        $sql = "UPDATE " . $GLOBALS['table_prefix'] . "list SET description=:description WHERE id=:id;";
+        try {
+            $db = PDO::getConnection();
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam("id", $_REQUEST['id']);
+            $stmt->bindParam("description", $_REQUEST['description'] );
+            $stmt->execute();
+            $db = null;
+            Lists::listGet( $_REQUEST['id'] );
+        } catch(\Exception $e) {
+            Response::outputError($e);
+        }
+        die(0);
+    }
+    static function listUpdateActive(){
+        $sql = "UPDATE " . $GLOBALS['table_prefix'] . "list SET active=:active WHERE id=:id;";
+        try {
+            $db = PDO::getConnection();
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam("id", $_REQUEST['id']);
+            $stmt->bindParam("active", $_REQUEST['active'] );
+            $stmt->execute();
+            $db = null;
+            Lists::listGet( $_REQUEST['id'] );
+        } catch(\Exception $e) {
+            Response::outputError($e);
+        }
+        die(0);
+    }
+
+
     /**
      * Delete a List.
      *
