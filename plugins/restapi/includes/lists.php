@@ -129,6 +129,60 @@ class Lists
         die(0);
     }
 
+    /**
+     * Update list description
+     *
+     * <p><strong>Parameters:</strong><br/>
+     * [*id] {integer} the ID of the list.<br/>
+     * [description] {string} adds a description to the list.<br/>
+     * <p><strong>Returns:</strong><br/>
+     * The list updated.
+     * </p>
+     */
+    static function listUpdateDescription(){
+        $sql = "UPDATE " . $GLOBALS['tables']['list'] . " SET description=:description WHERE id=:id;";
+
+        try {
+            $db = PDO::getConnection();
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam("id", $_REQUEST['id']);
+            $stmt->bindParam("description", $_REQUEST['description'], PDO::PARAM_STR);
+            $stmt->execute();
+            $db = null;
+            self::listGet( $_REQUEST['id'] );
+        } catch(\Exception $e) {
+            Response::outputError($e);
+        }
+        die(0);
+    }
+
+    /**
+     * Update list description
+     *
+     * <p><strong>Parameters:</strong><br/>
+     * [*id] {integer} the ID of the list.<br/>
+     * [active] {integer} if list should be active set this one to 1, otherwise it will be disabled.<br/>
+     * <p><strong>Returns:</strong><br/>
+     * The list updated.
+     * </p>
+     */
+    static function listUpdateActive(){
+        $sql = "UPDATE " . $GLOBALS['tables']['list'] . " SET active=:active WHERE id=:id;";
+        try {
+            $db = PDO::getConnection();
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam("id", $_REQUEST['id']);
+            $stmt->bindParam("active", $_REQUEST['active'], PDO::PARAM_BOOL );
+            $stmt->execute();
+            $db = null;
+            self::listGet( $_REQUEST['id'] );
+        } catch(\Exception $e) {
+            Response::outputError($e);
+        }
+        die(0);
+    }
+
+
     /**    
      * Delete a List.
      * 
